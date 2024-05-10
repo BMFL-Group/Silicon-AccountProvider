@@ -11,11 +11,12 @@ using Silicon_AccountProvider.Models;
 namespace Silicon_AccountProvider.Functions;
 
 
-public class SignIn(ILogger<SignIn> logger, SignInManager<UserAccount> signInManager)
+public class SignIn(ILogger<SignIn> logger, SignInManager<UserAccount> signInManager, UserManager<UserAccount> userManager)
 
 {
     private readonly ILogger<SignIn> _logger = logger;
     private readonly SignInManager<UserAccount> _signInManager = signInManager;
+    private readonly UserManager<UserAccount> _userManager = userManager;
 
 
     [Function("SignIn")]
@@ -50,19 +51,22 @@ public class SignIn(ILogger<SignIn> logger, SignInManager<UserAccount> signInMan
             {
                 try
                 {
-                    var result = await _signInManager.PasswordSignInAsync(ulr.Email, ulr.Password, ulr.IsPresistent, false);
+                    var userAccount = await _userManager.FindByEmailAsync(ulr.Email);
+                    var result = await _signInManager.CheckPasswordSignInAsync(userAccount!, ulr.Password, false);
 
                     if (result.Succeeded)
                     {
-                        // Get token from TokenProvider 
+                        // Get accesstoken from TokenProvider 
                         return new OkObjectResult("accesstoken");
                     }
-                    return new UnauthorizedResult();
+
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError($"_signInManager.PasswordSignInAsync :: {ex.Message}");
                 }
+
+                return new UnauthorizedResult();
             }
         }
         return new BadRequestResult();
