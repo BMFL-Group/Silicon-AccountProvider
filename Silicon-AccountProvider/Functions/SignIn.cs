@@ -35,24 +35,24 @@ public class SignIn(ILogger<SignIn> logger, SignInManager<UserAccount> signInMan
 
         if (body != null)
         {
-            // urr = user registration request 
-            SignInRequest ulr = null!;
+            // sir = SignInRequest
+            SignInRequest sir = null!;
 
             try
             {
-                ulr = JsonConvert.DeserializeObject<SignInRequest>(body)!;
+                sir = JsonConvert.DeserializeObject<SignInRequest>(body)!;
             }
             catch (Exception ex)
             {
                 _logger.LogError($"JsonConvert.DeserializeObject<UserLoginRequest> :: {ex.Message}");
             }
 
-            if (ulr != null && !string.IsNullOrEmpty(ulr.Email) && !string.IsNullOrEmpty(ulr.Password))
+            if (sir != null && !string.IsNullOrEmpty(sir.Email) && !string.IsNullOrEmpty(sir.Password))
             {
                 try
                 {
-                    var userAccount = await _userManager.FindByEmailAsync(ulr.Email);
-                    var result = await _signInManager.CheckPasswordSignInAsync(userAccount!, ulr.Password, false);
+                    var userAccount = await _userManager.FindByEmailAsync(sir.Email);
+                    var result = await _signInManager.CheckPasswordSignInAsync(userAccount!, sir.Password, false);
 
                     if (result.Succeeded)
                     {

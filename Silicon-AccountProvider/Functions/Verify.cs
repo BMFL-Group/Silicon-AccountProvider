@@ -37,7 +37,7 @@ public class Verify
 
         if (body != null)
         {
-            // urr = user registration request 
+            // vr = VerificationRequest
             VerificationRequest vr = null!;
 
             try
