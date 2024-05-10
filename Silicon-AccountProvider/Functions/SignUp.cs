@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Silicon_AccountProvider.Models;
+using System.Text;
 
 
 namespace Silicon_AccountProvider.Functions
@@ -66,6 +67,20 @@ namespace Silicon_AccountProvider.Functions
                             if (result.Succeeded)
                             {
                                 // send verifactionCode här! 
+
+                                // denna fungerar inte, måste ha rätt adress till verificationprovidern
+                                // ändra detta till service bus
+                               try
+                                {
+                                    using var http = new HttpClient();
+                                    StringContent content = new StringContent(JsonConvert.SerializeObject(new { Email = userAccount.Email }), Encoding.UTF8, "application/json");
+                                    var response = await http.PostAsync("http://verificationprovider.silicon.azurewebsite.net/api/generate", content);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError($"http.PostAsync :: {ex.Message}");
+                                }
+
                                 return new OkResult();
                             }
                         }
