@@ -6,6 +6,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Silicon_AccountProvider.Models;
+using System.Text;
 
 
 namespace Silicon_AccountProvider.Functions;
@@ -53,22 +54,38 @@ public class Verify
                 // verify code using VerificationProvider, där man fick koden ska även generera kod 
                 // ändra true till adressen till VerifactionProvider 
                 // detta är bara en simulering 
-                var isVerified = true;
 
-                if (isVerified)
+
+                // denna fungerar inte, måste ha rätt adress till verificationprovidern
+                // ändra detta till service bus
+                try
                 {
-                    var userAccount = await _userManager.FindByEmailAsync(vr.Email);
-                    if (userAccount != null)
-                    {
-                        userAccount.EmailConfirmed = true;
-                        await _userManager.UpdateAsync(userAccount);
+                    using var http = new HttpClient();
+                    StringContent content = new StringContent(JsonConvert.SerializeObject(vr), Encoding.UTF8, "application/json");
+                    // skickar ingenstanns nu
+                    //var response = await http.PostAsync("http://verificationprovider.silicon.azurewebsite.net/api/verify", content);
 
-                        if (await _userManager.IsEmailConfirmedAsync(userAccount))
+                    // true är bara en simulering för att man ska kunna testa
+                    if (true)
+                    {
+                        var userAccount = await _userManager.FindByEmailAsync(vr.Email);
+                        if (userAccount != null)
                         {
-                            return new OkResult();
+                            userAccount.EmailConfirmed = true;
+                            await _userManager.UpdateAsync(userAccount);
+
+                            if (await _userManager.IsEmailConfirmedAsync(userAccount))
+                            {
+                                return new OkResult();
+                            }
                         }
                     }
                 }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"http.PostAsync :: {ex.Message}");
+                }
+              
             }
         }
 
